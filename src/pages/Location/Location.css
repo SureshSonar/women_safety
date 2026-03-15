@@ -1,0 +1,244 @@
+/* ============================================
+   Location Page Styles
+   ============================================ */
+
+.location {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(var(--nav-height) + var(--space-lg));
+}
+
+/* ── Header ── */
+.location__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-lg);
+  padding-top: calc(var(--space-2xl) + env(safe-area-inset-top, 0px));
+}
+
+.location__title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.location__tracking-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.location__tracking-btn--active {
+  background: rgba(48, 209, 88, 0.12);
+  border-color: rgba(48, 209, 88, 0.3);
+  color: var(--color-success);
+}
+
+.location__tracking-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: all 0.3s;
+}
+
+.location__tracking-dot--active {
+  background: var(--color-success);
+  box-shadow: 0 0 8px var(--color-success-glow);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ── Map ── */
+.location__map-container {
+  position: relative;
+  margin: 0 var(--space-lg);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  height: 300px;
+}
+
+.location__map {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.location__map-controls {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.location__control-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  backdrop-filter: blur(8px);
+}
+
+.location__control-btn--active {
+  background: rgba(255, 45, 85, 0.15);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.location__map-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 500;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.location__loading-icon {
+  animation: spin 2s linear infinite;
+  color: var(--color-danger);
+}
+
+/* User marker */
+.user-marker {
+  background: none !important;
+  border: none !important;
+}
+
+/* ── Location Info ── */
+.location__info {
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.location__coords-card {
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  animation: slideUp 0.4s ease-out;
+}
+
+.location__coords-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.location__coords-indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 45, 85, 0.12);
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.location__coords-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.location__coords-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.location__coords-accuracy {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.location__last-update {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-color);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* ── Actions ── */
+.location__actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.location__action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg) var(--space-sm);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.location__action-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.location__action-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── No Location ── */
+.location__no-location {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-2xl);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.location__hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

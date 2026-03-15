@@ -1,0 +1,289 @@
+/* ============================================
+   Nearby Help Page Styles
+   ============================================ */
+
+.nearby {
+  flex: 1;
+  padding-bottom: calc(var(--nav-height) + var(--space-lg));
+}
+
+/* ── Header ── */
+.nearby__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-lg);
+  padding-top: calc(var(--space-2xl) + env(safe-area-inset-top, 0px));
+}
+
+.nearby__title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.nearby__refresh-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.nearby__refresh-btn:disabled {
+  opacity: 0.5;
+}
+
+.nearby__spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ── Tabs ── */
+.nearby__tabs {
+  display: flex;
+  gap: var(--space-sm);
+  padding: 0 var(--space-lg);
+  margin-bottom: var(--space-lg);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.nearby__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.nearby__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.nearby__tab--active {
+  background: color-mix(in srgb, var(--tab-color) 15%, transparent);
+  border-color: color-mix(in srgb, var(--tab-color) 40%, transparent);
+  color: var(--tab-color);
+}
+
+.nearby__tab:active {
+  transform: scale(0.95);
+}
+
+/* ── Results ── */
+.nearby__results {
+  padding: 0 var(--space-lg);
+  min-height: 200px;
+}
+
+.nearby__loading,
+.nearby__error,
+.nearby__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-2xl) var(--space-lg);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.nearby__loading p,
+.nearby__error p,
+.nearby__empty p {
+  font-size: 0.9rem;
+}
+
+.nearby__empty span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.nearby__empty-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nearby__retry-btn {
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-danger);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+/* ── Place Cards ── */
+.nearby__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.nearby__card {
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s;
+}
+
+.nearby__card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.nearby__card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.nearby__card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nearby__card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nearby__card-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  text-transform: capitalize;
+}
+
+.nearby__card-address {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nearby__card-distance {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.nearby__card-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.nearby__card-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.nearby__card-action:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.nearby__card-action:active {
+  transform: scale(0.95);
+}
+
+/* ── Emergency Numbers ── */
+.nearby__emergency {
+  padding: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+.nearby__section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-md);
+}
+
+.nearby__number-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+}
+
+.nearby__number-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.nearby__number-card:hover {
+  border-color: rgba(255, 45, 85, 0.3);
+  background: rgba(255, 45, 85, 0.05);
+}
+
+.nearby__number-card:active {
+  transform: scale(0.95);
+}
+
+.nearby__number-value {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--color-danger);
+  letter-spacing: 2px;
+}
+
+.nearby__number-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
