@@ -28,7 +28,7 @@ export async function sendSOSAlert(method = 'app', sessionId = null) {
   // Fix for Capacitor/localhost using a generic public domain placeholder
   let baseUrl = window.location.origin;
   if (baseUrl.includes('localhost') || baseUrl.includes('capacitor://') || baseUrl.startsWith('file://')) {
-    baseUrl = 'https://women-safety-85259dmtu-sureshsonars-projects.vercel.app';
+    baseUrl = 'https://women-safety-indol.vercel.app';
   }
 
   const mapLink = location ? getGoogleMapsLink(location.latitude, location.longitude) : '';

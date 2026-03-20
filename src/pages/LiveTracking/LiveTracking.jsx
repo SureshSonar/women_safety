@@ -110,7 +110,7 @@ export default function LiveTracking() {
   const getBaseUrl = () => {
     let baseUrl = window.location.origin;
     if (baseUrl.includes('localhost') || baseUrl.includes('capacitor://') || baseUrl.startsWith('file://')) {
-      return 'https://women-safety-85259dmtu-sureshsonars-projects.vercel.app';
+      return 'https://women-safety-indol.vercel.app';
     }
     return baseUrl;
   };

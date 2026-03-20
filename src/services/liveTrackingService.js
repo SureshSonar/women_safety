@@ -28,7 +28,7 @@ export const createTrackingSession = () => {
 export const getTrackingLink = (sessionId) => {
   let baseUrl = window.location.origin;
   if (baseUrl.includes('localhost') || baseUrl.includes('capacitor://') || baseUrl.startsWith('file://')) {
-    baseUrl = 'https://women-safety-85259dmtu-sureshsonars-projects.vercel.app';
+    baseUrl = 'https://women-safety-indol.vercel.app';
   }
   return `${baseUrl}/track/${sessionId}`;
 };
