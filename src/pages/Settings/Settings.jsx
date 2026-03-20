@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import {
   User, Bell, Smartphone, Shield, ChevronRight,
   Save, Volume2, Vibrate, Clock, MessageSquare,
-  Info, Heart
+  Info, Heart, BatteryLow, EyeOff
 } from 'lucide-react';
 import { getUserProfile, saveUserProfile, getSettings, saveSettings } from '../../utils/storage';
 import { requestNotificationPermission } from '../../services/alertService';
@@ -187,6 +187,69 @@ export default function Settings({ showToast }) {
         </div>
       </div>
 
+      {/* Advanced Safety Features */}
+      <div className="settings__section animate-slide-up" style={{ animationDelay: '0.15s' }}>
+        <h2 className="settings__section-title">
+          <EyeOff size={16} />
+          Advanced Safety Features
+        </h2>
+
+        <div className="settings__card glass">
+          <div className="settings__toggle-item">
+            <div className="settings__toggle-info">
+              <EyeOff size={18} />
+              <div>
+                <span className="settings__toggle-label">Camouflage Mode</span>
+                <span className="settings__toggle-desc">Disguise app as a calculator</span>
+              </div>
+            </div>
+            <label className="settings__switch">
+              <input
+                type="checkbox"
+                checked={settings.camouflageMode}
+                onChange={(e) => handleSettingChange('camouflageMode', e.target.checked)}
+              />
+              <span className="settings__slider" />
+            </label>
+          </div>
+
+          {settings.camouflageMode && (
+            <div className="settings__field animate-slide-down">
+              <label className="settings__label">Secret PIN</label>
+              <input
+                type="text"
+                className="settings__input"
+                value={settings.camouflagePin || '1234'}
+                onChange={(e) => handleSettingChange('camouflagePin', e.target.value)}
+                placeholder="Enter 4-digit PIN"
+                maxLength={8}
+              />
+              <span className="settings__hint">
+                Enter this PIN in the calculator to unlock SafeHer.
+              </span>
+            </div>
+          )}
+
+          <div className="settings__toggle-item" style={{ marginTop: settings.camouflageMode ? '15px' : '0' }}>
+            <div className="settings__toggle-info">
+              <BatteryLow size={18} />
+              <div>
+                <span className="settings__toggle-label">Battery Death Alert</span>
+                <span className="settings__toggle-desc">Auto-SOS when battery is critical (≤5%)</span>
+              </div>
+            </div>
+            <label className="settings__switch">
+              <input
+                type="checkbox"
+                checked={settings.batteryAlertEnabled}
+                onChange={(e) => handleSettingChange('batteryAlertEnabled', e.target.checked)}
+              />
+              <span className="settings__slider" />
+            </label>
+          </div>
+        </div>
+      </div>
+
       {/* Notifications */}
       <div className="settings__section animate-slide-up" style={{ animationDelay: '0.2s' }}>
         <h2 className="settings__section-title">
@@ -226,9 +289,12 @@ export default function Settings({ showToast }) {
             <h3>SafeHer</h3>
             <p>Women Safety Quick Alert App</p>
             <span className="settings__version">Version 1.0.0</span>
+            <div className="settings__about-quote">
+              "Every woman deserves to feel safe, heard, and empowered."
+            </div>
             <div className="settings__about-footer">
               <Heart size={14} className="settings__heart" />
-              <span>Built with care for safety</span>
+              <span>Built with care for women's safety</span>
             </div>
           </div>
         </div>

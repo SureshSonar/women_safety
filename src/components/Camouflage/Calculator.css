@@ -1,0 +1,98 @@
+/* ============================================
+   Camouflage Calculator Styles
+   ============================================ */
+
+.camouflage-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #fff;
+}
+
+.calc-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.calc-display-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding-bottom: 20px;
+  min-height: 200px;
+}
+
+.calc-equation {
+  color: #888;
+  font-size: 1.5rem;
+  height: 2rem;
+}
+
+.calc-display {
+  font-size: 4.5rem;
+  font-weight: 300;
+  letter-spacing: -1px;
+  margin: 0;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.calc-keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.calc-btn {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 100%;
+  aspect-ratio: 1;
+  font-size: 2rem;
+  font-weight: 400;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: filter 0.1s;
+}
+
+.calc-btn:active {
+  filter: brightness(1.5);
+}
+
+.calc-btn-op {
+  background-color: #ff9f0a;
+  color: #fff;
+  font-size: 2.5rem;
+  font-weight: 500;
+}
+
+.calc-btn-top {
+  background-color: #a5a5a5;
+  color: #000;
+}
+
+.calc-btn-zero {
+  grid-column: span 2;
+  border-radius: 40px;
+  aspect-ratio: 2.1;
+  justify-content: flex-start;
+  padding-left: 30px;
+}

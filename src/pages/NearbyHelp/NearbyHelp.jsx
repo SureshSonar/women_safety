@@ -1,11 +1,12 @@
 // ============================================
 // Nearby Help Page - Police, Hospitals, etc.
+// Enhanced with women-safety resources
 // ============================================
 
 import { useState, useEffect } from 'react';
 import {
   Shield, Building2, Flame, Pill, MapPin,
-  Phone, ExternalLink, RefreshCw, Navigation
+  Phone, ExternalLink, RefreshCw, Navigation, Heart, HeartHandshake
 } from 'lucide-react';
 import { getCurrentPosition, searchNearbyPlaces, getGoogleMapsLink } from '../../services/locationService';
 import './NearbyHelp.css';
@@ -174,9 +175,58 @@ export default function NearbyHelp({ showToast }) {
         )}
       </div>
 
+      {/* Women Safety Resources */}
+      <div className="nearby__women-resources">
+        <h3 className="nearby__section-title">
+          <HeartHandshake size={16} style={{ color: '#e040fb' }} />
+          Women Safety Helplines
+        </h3>
+        <div className="nearby__women-cards">
+          <a href="tel:1091" className="nearby__women-card" id="women-helpline-1091">
+            <div className="nearby__women-card-icon">
+              <Heart size={18} />
+            </div>
+            <div className="nearby__women-card-info">
+              <span className="nearby__women-card-title">Women Helpline</span>
+              <span className="nearby__women-card-desc">24/7 Free & Confidential</span>
+            </div>
+            <div className="nearby__women-card-number">
+              <Phone size={12} />
+              <span>1091</span>
+            </div>
+          </a>
+          <a href="tel:181" className="nearby__women-card" id="women-helpline-181">
+            <div className="nearby__women-card-icon nearby__women-card-icon--purple">
+              <Shield size={18} />
+            </div>
+            <div className="nearby__women-card-info">
+              <span className="nearby__women-card-title">Domestic Violence</span>
+              <span className="nearby__women-card-desc">Women in Distress Helpline</span>
+            </div>
+            <div className="nearby__women-card-number">
+              <Phone size={12} />
+              <span>181</span>
+            </div>
+          </a>
+          <a href="tel:7827-170-170" className="nearby__women-card" id="women-helpline-ncw">
+            <div className="nearby__women-card-icon nearby__women-card-icon--pink">
+              <HeartHandshake size={18} />
+            </div>
+            <div className="nearby__women-card-info">
+              <span className="nearby__women-card-title">NCW Helpline</span>
+              <span className="nearby__women-card-desc">National Commission for Women</span>
+            </div>
+            <div className="nearby__women-card-number">
+              <Phone size={12} />
+              <span>7827170170</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
       {/* Emergency Numbers */}
       <div className="nearby__emergency">
-        <h3 className="nearby__section-title">Emergency Numbers</h3>
+        <h3 className="nearby__section-title">General Emergency Numbers</h3>
         <div className="nearby__number-grid">
           <a href="tel:112" className="nearby__number-card glass">
             <span className="nearby__number-value">112</span>
@@ -190,9 +240,9 @@ export default function NearbyHelp({ showToast }) {
             <span className="nearby__number-value">108</span>
             <span className="nearby__number-label">Ambulance</span>
           </a>
-          <a href="tel:1091" className="nearby__number-card glass">
-            <span className="nearby__number-value">1091</span>
-            <span className="nearby__number-label">Women Helpline</span>
+          <a href="tel:101" className="nearby__number-card glass">
+            <span className="nearby__number-value">101</span>
+            <span className="nearby__number-label">Fire</span>
           </a>
         </div>
       </div>

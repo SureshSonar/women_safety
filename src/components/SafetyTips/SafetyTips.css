@@ -1,0 +1,113 @@
+/* ============================================
+   Safety Tips Component Styles
+   ============================================ */
+
+.safety-tips {
+  margin: 0 var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.safety-tips__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-purple);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-sm);
+}
+
+.safety-tips__dots {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+}
+
+.safety-tips__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  border: none;
+}
+
+.safety-tips__dot--active {
+  width: 18px;
+  border-radius: 3px;
+  background: var(--dot-color, var(--color-purple));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--dot-color, var(--color-purple)) 50%, transparent);
+}
+
+.safety-tips__card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, rgba(191, 90, 242, 0.06), rgba(255, 45, 85, 0.04));
+  border: 1px solid rgba(191, 90, 242, 0.12);
+  transition: all 0.3s ease;
+}
+
+.safety-tips__card--enter {
+  animation: tipSlideIn 0.4s ease-out forwards;
+}
+
+.safety-tips__card--exit {
+  animation: tipSlideOut 0.3s ease-in forwards;
+}
+
+@keyframes tipSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tipSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+
+.safety-tips__icon {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.safety-tips__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.safety-tips__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.safety-tips__desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

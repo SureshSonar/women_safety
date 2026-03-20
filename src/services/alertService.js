@@ -10,7 +10,7 @@ import { getCurrentPosition, getGoogleMapsLink } from './locationService';
  * Send emergency SOS alert to all contacts
  * This is the main alert dispatch function
  */
-export async function sendSOSAlert(method = 'app') {
+export async function sendSOSAlert(method = 'app', sessionId = null) {
   const contacts = getContacts();
   const profile = getUserProfile();
 
@@ -25,10 +25,16 @@ export async function sendSOSAlert(method = 'app') {
   } catch (err) {
     console.warn('Could not get location:', err);
   }
+  // Fix for Capacitor/localhost using a generic public domain placeholder
+  let baseUrl = window.location.origin;
+  if (baseUrl.includes('localhost') || baseUrl.includes('capacitor://') || baseUrl.startsWith('file://')) {
+    baseUrl = 'https://women-safety-85259dmtu-sureshsonars-projects.vercel.app';
+  }
 
   const mapLink = location ? getGoogleMapsLink(location.latitude, location.longitude) : '';
+  const trackingLink = sessionId ? `${baseUrl}/track/${sessionId}` : '';
 
-  const message = buildEmergencyMessage(profile, location, mapLink);
+  const message = buildEmergencyMessage(profile, location, mapLink, trackingLink);
 
   // Attempt to send via multiple channels
   const results = {
@@ -73,7 +79,7 @@ export async function sendSOSAlert(method = 'app') {
 /**
  * Build the emergency message text
  */
-function buildEmergencyMessage(profile, location, mapLink) {
+function buildEmergencyMessage(profile, location, mapLink, trackingLink) {
   let msg = `🚨 EMERGENCY SOS ALERT!\n\n`;
   msg += `${profile.name} has triggered an emergency alert and needs immediate help!\n\n`;
   msg += profile.emergencyMessage + '\n\n';
@@ -84,6 +90,10 @@ function buildEmergencyMessage(profile, location, mapLink) {
     msg += `📏 Accuracy: ±${Math.round(location.accuracy)}m\n\n`;
   } else {
     msg += `⚠️ Location could not be determined.\n\n`;
+  }
+
+  if (trackingLink) {
+    msg += `📲 LIVE TRACKING: ${trackingLink}\n\n`;
   }
 
   msg += `⏰ Time: ${new Date().toLocaleString()}\n`;
@@ -199,7 +209,7 @@ export function playSiren(duration = 5000) {
     };
   } catch (err) {
     console.warn('Could not play siren:', err);
-    return { stop: () => {} };
+    return { stop: () => { } };
   }
 }
 

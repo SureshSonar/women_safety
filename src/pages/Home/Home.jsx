@@ -1,17 +1,22 @@
 // ============================================
 // Home Page - SOS Emergency Dashboard
 // The central screen with the big SOS button
+// Enhanced with women-safety focused elements
 // ============================================
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Shield, ShieldAlert, Phone, MessageCircle, Volume2,
-  VolumeX, Zap, Wifi, WifiOff, MapPin, Clock
+  VolumeX, Zap, Wifi, WifiOff, MapPin, Clock,
+  PhoneCall, Heart, AlertTriangle
 } from 'lucide-react';
 import { sendSOSAlert, playSiren, triggerVibration } from '../../services/alertService';
 import { getCurrentPosition, getGoogleMapsLink } from '../../services/locationService';
+import { createTrackingSession, startBroadcasting, stopBroadcasting, getTrackingLink } from '../../services/liveTrackingService';
 import { getContacts, getSettings, getAlertHistory } from '../../utils/storage';
 import { startShakeDetection, stopShakeDetection, isDeviceMotionSupported } from '../../services/shakeDetection';
+import SafetyTips from '../../components/SafetyTips/SafetyTips';
+import FakeCall from '../../components/FakeCall/FakeCall';
 import './Home.css';
 
 export default function Home({ showToast }) {
@@ -25,6 +30,9 @@ export default function Home({ showToast }) {
   const [contacts, setContacts] = useState([]);
   const [recentAlerts, setRecentAlerts] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showFakeCall, setShowFakeCall] = useState(false);
+  const [trackingSessionId, setTrackingSessionId] = useState(null);
+  const [trackingControl, setTrackingControl] = useState(null);
 
   const sirenRef = useRef(null);
   const countdownRef = useRef(null);
@@ -54,6 +62,19 @@ export default function Home({ showToast }) {
       clearInterval(timer);
     };
   }, []);
+
+  // Hardware Button SOS Trigger (Volume rapid clicks from Capacitor Android shell)
+  useEffect(() => {
+    const handleHardwareSOS = () => {
+      if (!isAlertActive) {
+        showToast('⚙️ Hardware SOS Triggered!', 'warning');
+        executeSOSAlert();
+      }
+    };
+    
+    window.addEventListener('hardware_sos_trigger', handleHardwareSOS);
+    return () => window.removeEventListener('hardware_sos_trigger', handleHardwareSOS);
+  }, [isAlertActive]); // Re-bind on alert state change to prevent double triggering
 
   // Shake detection
   const handleShakeTrigger = useCallback(() => {
@@ -105,14 +126,22 @@ export default function Home({ showToast }) {
     setIsAlertActive(true);
     triggerVibration();
 
+    // Start Live Tracking Session
+    const sessionId = createTrackingSession();
+    setTrackingSessionId(sessionId);
+    const control = startBroadcasting(sessionId, { emergencyMode: true });
+    setTrackingControl(control);
+
     try {
-      const result = await sendSOSAlert('app');
+      const result = await sendSOSAlert('app', sessionId);
       setAlertResult(result);
       setLocation(result.location);
       showToast(`🚨 Emergency alert sent to ${result.contactsNotified} contacts!`, 'success');
     } catch (err) {
       showToast(err.message, 'error');
       setIsAlertActive(false);
+      stopBroadcasting(sessionId);
+      setTrackingSessionId(null);
     }
   };
 
@@ -120,6 +149,11 @@ export default function Home({ showToast }) {
   const deactivateAlert = () => {
     setIsAlertActive(false);
     setAlertResult(null);
+    if (trackingSessionId) {
+      stopBroadcasting(trackingSessionId);
+      setTrackingSessionId(null);
+      setTrackingControl(null);
+    }
     if (sirenRef.current) {
       sirenRef.current.stop();
       sirenRef.current = null;
@@ -162,8 +196,36 @@ export default function Home({ showToast }) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const getGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    if (hour < 21) return 'Good Evening';
+    return 'Stay Safe Tonight';
+  };
+
+  // Safety readiness score
+  const getSafetyScore = () => {
+    let score = 0;
+    if (contacts.length >= 1) score += 30;
+    if (contacts.length >= 3) score += 10;
+    if (location) score += 25;
+    if (isOnline) score += 15;
+    if (shakeEnabled) score += 10;
+    const settings = getSettings();
+    if (settings.sirenEnabled) score += 10;
+    return Math.min(score, 100);
+  };
+
+  const safetyScore = getSafetyScore();
+
   return (
     <div className={`home ${isAlertActive ? 'home--alert-active' : ''}`} id="home-page">
+      {/* Fake Call Modal */}
+      {showFakeCall && (
+        <FakeCall onClose={() => setShowFakeCall(false)} />
+      )}
+
       {/* Status Bar */}
       <div className="home__status-bar">
         <div className="home__status-left">
@@ -179,6 +241,44 @@ export default function Home({ showToast }) {
         <div className="home__status-right">
           <span className="home__time">{formatTime(currentTime)}</span>
         </div>
+      </div>
+
+      {/* Greeting & Safety Score */}
+      <div className="home__greeting">
+        <div className="home__greeting-text">
+          <h2 className="home__greeting-title">{getGreeting()} 👋</h2>
+          <p className="home__greeting-subtitle">Your safety is our priority</p>
+        </div>
+        <div className="home__safety-score" title="Safety readiness score">
+          <svg className="home__score-ring" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+            <circle
+              cx="20" cy="20" r="16" fill="none"
+              stroke={safetyScore >= 70 ? '#30d158' : safetyScore >= 40 ? '#ff9f0a' : '#ff453a'}
+              strokeWidth="3"
+              strokeDasharray={`${safetyScore} ${100 - safetyScore}`}
+              strokeDashoffset="25"
+              strokeLinecap="round"
+              className="home__score-circle"
+            />
+          </svg>
+          <span className="home__score-value">{safetyScore}</span>
+        </div>
+      </div>
+
+      {/* Women Helpline Banner */}
+      <div className="home__helpline-banner">
+        <div className="home__helpline-icon">
+          <Heart size={16} />
+        </div>
+        <div className="home__helpline-info">
+          <span className="home__helpline-title">Women Helpline</span>
+          <span className="home__helpline-desc">24/7 Free & Confidential Support</span>
+        </div>
+        <a href="tel:1091" className="home__helpline-call" id="women-helpline-btn">
+          <Phone size={14} />
+          <span>1091</span>
+        </a>
       </div>
 
       {/* Hero Section */}
@@ -287,6 +387,15 @@ export default function Home({ showToast }) {
       {/* Quick Action Cards */}
       <div className="home__actions">
         <button
+          className="home__action-card glass home__action-card--fakecall"
+          onClick={() => setShowFakeCall(true)}
+          id="fake-call-btn"
+        >
+          <PhoneCall size={22} />
+          <span>Fake Call</span>
+        </button>
+
+        <button
           className={`home__action-card glass ${sirenActive ? 'home__action-card--active' : ''}`}
           onClick={toggleSiren}
           id="siren-toggle"
@@ -330,6 +439,35 @@ export default function Home({ showToast }) {
           <MessageCircle size={22} />
           <span>{isOnline ? 'SMS Alert' : 'SMS (Offline)'}</span>
         </button>
+      </div>
+
+      {/* Safety Tips */}
+      <SafetyTips />
+
+      {/* Emergency Numbers Quick Access */}
+      <div className="home__emergency-strip">
+        <div className="home__emergency-title">
+          <AlertTriangle size={14} />
+          <span>Emergency Numbers</span>
+        </div>
+        <div className="home__emergency-numbers">
+          <a href="tel:112" className="home__emergency-number">
+            <span className="home__emergency-num">112</span>
+            <span className="home__emergency-label">Emergency</span>
+          </a>
+          <a href="tel:100" className="home__emergency-number">
+            <span className="home__emergency-num">100</span>
+            <span className="home__emergency-label">Police</span>
+          </a>
+          <a href="tel:1091" className="home__emergency-number home__emergency-number--highlight">
+            <span className="home__emergency-num">1091</span>
+            <span className="home__emergency-label">Women</span>
+          </a>
+          <a href="tel:108" className="home__emergency-number">
+            <span className="home__emergency-num">108</span>
+            <span className="home__emergency-label">Ambulance</span>
+          </a>
+        </div>
       </div>
 
       {/* Recent Alerts */}

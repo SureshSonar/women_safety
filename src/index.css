@@ -44,12 +44,13 @@
   --shadow-danger: 0 0 40px rgba(255, 45, 85, 0.35);
 
   /* Gradients */
-  --gradient-danger: linear-gradient(135deg, #ff2d55, #ff6b6b);
+  --gradient-danger: linear-gradient(135deg, #ff375f, #e040fb);
   --gradient-dark: linear-gradient(180deg, #12121a, #0a0a0f);
   --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
   --gradient-success: linear-gradient(135deg, #30d158, #34c759);
   --gradient-warning: linear-gradient(135deg, #ff9f0a, #ffcc02);
   --gradient-info: linear-gradient(135deg, #64d2ff, #5ac8fa);
+  --gradient-empowerment: linear-gradient(135deg, #e040fb, #ff375f);
 
   /* Spacing */
   --space-xs: 4px;

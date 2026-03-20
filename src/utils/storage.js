@@ -126,6 +126,9 @@ export function getSettings() {
     autoCallEmergency: false,
     sirenEnabled: true,
     vibrationEnabled: true,
+    camouflageMode: false,
+    camouflagePin: '1234',
+    batteryAlertEnabled: true,
   };
 }
 

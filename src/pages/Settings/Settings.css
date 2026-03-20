@@ -322,3 +322,15 @@
   color: var(--color-danger);
   animation: pulse 2s ease-in-out infinite;
 }
+
+.settings__about-quote {
+  margin-top: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(224, 64, 251, 0.06), rgba(255, 55, 95, 0.04));
+  border-left: 3px solid #e040fb;
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
