@@ -424,14 +424,17 @@ export default function Home({ showToast }) {
           className="home__action-card glass"
           onClick={() => {
             if (!isOnline) {
-              showToast('📵 Offline mode: Use SMS alert instead', 'warning');
-            }
-            if (contacts.length > 0 && location) {
-              const msg = `🚨 EMERGENCY! I need help! My location: ${getGoogleMapsLink(location.latitude, location.longitude)}`;
-              const phone = contacts[0].phone.replace(/\D/g, '');
-              window.open(`sms:${phone}?body=${encodeURIComponent(msg)}`);
+              showToast('📵 Offline mode: SMS location only', 'warning');
+              if (contacts.length > 0 && location) {
+                const msg = `🚨 EMERGENCY OFF-GRID! My last location: ${getGoogleMapsLink(location.latitude, location.longitude)}`;
+                const phone = contacts[0].phone.replace(/\D/g, '');
+                window.open(`sms:${phone}?body=${encodeURIComponent(msg)}`);
+              } else {
+                showToast('Add contacts & enable location first', 'error');
+              }
             } else {
-              showToast('Add contacts & enable location first', 'error');
+              // Online: Generate both Tracking and Location links via full SOS protocol
+              executeSOSAlert();
             }
           }}
           id="sms-alert"

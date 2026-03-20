@@ -80,24 +80,24 @@ export async function sendSOSAlert(method = 'app', sessionId = null) {
  * Build the emergency message text
  */
 function buildEmergencyMessage(profile, location, mapLink, trackingLink) {
-  let msg = `🚨 EMERGENCY SOS ALERT!\n\n`;
-  msg += `${profile.name} has triggered an emergency alert and needs immediate help!\n\n`;
-  msg += profile.emergencyMessage + '\n\n';
+  let msg = `🚨 EMERGENCY SOS ALERT!\n`;
+  msg += `${profile.name} needs help immediately!\n\n`;
 
-  if (location) {
-    msg += `📍 Location: ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}\n`;
-    msg += `🗺️ View on Map: ${mapLink}\n`;
-    msg += `📏 Accuracy: ±${Math.round(location.accuracy)}m\n\n`;
-  } else {
-    msg += `⚠️ Location could not be determined.\n\n`;
+  if (profile.emergencyMessage) {
+    msg += `"${profile.emergencyMessage}"\n\n`;
+  }
+
+  if (mapLink) {
+    msg += `📍 Location Link: ${mapLink}\n`;
   }
 
   if (trackingLink) {
-    msg += `📲 LIVE TRACKING: ${trackingLink}\n\n`;
+    msg += `📲 Live Tracking: ${trackingLink}\n`;
   }
 
-  msg += `⏰ Time: ${new Date().toLocaleString()}\n`;
-  msg += `\nPlease respond immediately or contact local authorities.`;
+  if (!mapLink && !trackingLink) {
+    msg += `⚠️ Location could not be determined.\n`;
+  }
 
   return msg;
 }
