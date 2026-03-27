@@ -773,3 +773,56 @@
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
+
+/* ── Viewer Marker (Blue) ── */
+.viewer-marker-container {
+  background: none !important;
+  border: none !important;
+}
+
+.viewer-marker {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewer-pulse-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 122, 255, 0.25);
+  border-radius: 50%;
+  animation: viewer-pulse 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.viewer-dot {
+  position: relative;
+  z-index: 2;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #007aff, #5ac8fa);
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.5);
+}
+
+@keyframes viewer-pulse {
+  0% { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* ── Distance Card ── */
+.info-card-wide {
+  grid-column: 1 / -1;
+  background: rgba(255, 204, 0, 0.04);
+  border: 1px solid rgba(255, 204, 0, 0.12);
+}
+
+.info-icon-yellow {
+  background: rgba(255, 204, 0, 0.12);
+  color: #ffcc00;
+}
+

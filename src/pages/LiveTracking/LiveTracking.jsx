@@ -4,7 +4,7 @@
 // Emergency-focused enhancements
 // ============================================
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polyline } from 'react-leaflet';
 import L from 'leaflet';
@@ -12,7 +12,7 @@ import 'leaflet/dist/leaflet.css';
 import {
   Shield, Navigation, AlertTriangle, User, Clock, Route,
   CheckCircle, BatteryLow, MapPin, Crosshair, Phone,
-  Share2, Copy, ChevronUp, ChevronDown, Eye, Radio, Wifi
+  Share2, Copy, ChevronUp, ChevronDown, Eye, Radio, Wifi, Locate
 } from 'lucide-react';
 import { useTrackingSubscription } from '../../hooks/useTracking';
 import { getGoogleMapsLink } from '../../services/locationService';
@@ -34,6 +34,47 @@ const createTrackingIcon = (heading = 0) => new L.DivIcon({
   iconAnchor: [25, 25],
 });
 
+// Viewer's own location marker (blue)
+const viewerIcon = new L.DivIcon({
+  html: `<div class="viewer-marker">
+           <div class="viewer-pulse-ring"></div>
+           <div class="viewer-dot"></div>
+         </div>`,
+  className: 'viewer-marker-container',
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
+});
+
+// Calculate distance between two lat/lng points (Haversine formula)
+function calcDistanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Filter trail to remove broken segments (GPS jumps > threshold)
+function filterTrailSegments(points, maxGapKm = 0.5) {
+  if (points.length < 2) return [points];
+  const segments = [[points[0]]];
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const dist = calcDistanceKm(prev.lat, prev.lng, curr.lat, curr.lng);
+    if (dist > maxGapKm) {
+      segments.push([curr]); // start new segment
+    } else {
+      segments[segments.length - 1].push(curr);
+    }
+  }
+  return segments;
+}
 // Component to dynamically re-center map
 function AutoCenterMap({ location, follow }) {
   const map = useMap();
@@ -71,6 +112,7 @@ export default function LiveTracking() {
   const [followMode, setFollowMode] = useState(true);
   const [sheetExpanded, setSheetExpanded] = useState(true);
   const [currentTime, setCurrentTime] = useState(Date.now());
+  const [viewerLocation, setViewerLocation] = useState(null);
 
   // Use the tracking subscription hook
   const {
@@ -90,10 +132,36 @@ export default function LiveTracking() {
     return () => clearInterval(timer);
   }, []);
 
-  // Trail polyline points
-  const trailPoints = useMemo(() => {
-    return history.map(p => [p.lat, p.lng]);
+  // Watch viewer's own location continuously
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setViewerLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        });
+      },
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
+  // Trail segments (filtered to remove broken GPS jumps)
+  const trailSegments = useMemo(() => {
+    return filterTrailSegments(history, 0.5); // 500m threshold
   }, [history]);
+
+  // Distance between viewer and tracked person
+  const distanceBetween = useMemo(() => {
+    if (!viewerLocation || !targetLocation) return null;
+    return calcDistanceKm(
+      viewerLocation.lat, viewerLocation.lng,
+      targetLocation.lat, targetLocation.lng
+    );
+  }, [viewerLocation, targetLocation]);
 
   // Time calculations
   const timeAgo = lastUpdateTime ? Math.floor((currentTime - lastUpdateTime) / 1000) : null;
@@ -202,18 +270,21 @@ export default function LiveTracking() {
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             />
 
-            {/* Trail polyline */}
-            {trailPoints.length > 1 && (
-              <Polyline
-                positions={trailPoints}
-                pathOptions={{
-                  color: '#ff2d55',
-                  weight: 3,
-                  opacity: 0.6,
-                  dashArray: '8, 6',
-                  lineCap: 'round',
-                }}
-              />
+            {/* Trail polyline segments (gap-aware) */}
+            {trailSegments.map((segment, i) =>
+              segment.length > 1 ? (
+                <Polyline
+                  key={`trail-${i}`}
+                  positions={segment.map(p => [p.lat, p.lng])}
+                  pathOptions={{
+                    color: '#ff2d55',
+                    weight: 3,
+                    opacity: 0.6,
+                    dashArray: '8, 6',
+                    lineCap: 'round',
+                  }}
+                />
+              ) : null
             )}
 
             {/* Accuracy circle */}
@@ -244,6 +315,37 @@ export default function LiveTracking() {
                 </div>
               </Popup>
             </Marker>
+
+            {/* Viewer's own location (blue marker) */}
+            {viewerLocation && (
+              <>
+                <Circle
+                  center={[viewerLocation.lat, viewerLocation.lng]}
+                  radius={viewerLocation.accuracy || 30}
+                  pathOptions={{
+                    fillColor: '#007aff',
+                    fillOpacity: 0.08,
+                    color: '#007aff',
+                    weight: 1,
+                    opacity: 0.3,
+                  }}
+                />
+                <Marker
+                  position={[viewerLocation.lat, viewerLocation.lng]}
+                  icon={viewerIcon}
+                >
+                  <Popup className="tracking-popup">
+                    <div className="popup-content">
+                      <Locate size={14} />
+                      <div className="popup-info">
+                        <strong>Your Location</strong>
+                        <span>{formatCoords(viewerLocation.lat, viewerLocation.lng)}</span>
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              </>
+            )}
 
             <AutoCenterMap location={targetLocation} follow={followMode} />
           </MapContainer>
@@ -372,6 +474,22 @@ export default function LiveTracking() {
               <span className="info-value">{history.length} tracked</span>
             </div>
           </div>
+
+          {distanceBetween !== null && (
+            <div className="info-card info-card-wide">
+              <div className="info-icon-wrap info-icon-yellow">
+                <Navigation size={18} />
+              </div>
+              <div className="info-data">
+                <span className="info-label">Distance to Person</span>
+                <span className="info-value">
+                  {distanceBetween < 1
+                    ? `${Math.round(distanceBetween * 1000)}m away`
+                    : `${distanceBetween.toFixed(1)} km away`}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Status Alert */}
