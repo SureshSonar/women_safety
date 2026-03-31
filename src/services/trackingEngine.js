@@ -68,8 +68,11 @@ export class TrackingEngine {
     // Internal state
     this._watchId = null;
     this._intervalId = null;
+    this._heartbeatId = null;
     this._isRunning = false;
     this._lastPosition = null;
+    this._lastBroadcastPosition = null;
+    this._lastBroadcastTime = 0;
     this._positionBuffer = [];
     this._speedHistory = [];
     this._stationaryCount = 0;
@@ -243,6 +246,26 @@ export class TrackingEngine {
         }
       );
     }, this.mode.interval);
+
+    // Heartbeat: re-broadcast last known position periodically
+    // This ensures newly-joined viewers always get a location,
+    // even if the sender is stationary and the distance filter
+    // is blocking GPS updates.
+    const heartbeatInterval = this._emergencyMode ? 10000 : 20000;
+    this._heartbeatId = setInterval(() => {
+      if (this._lastBroadcastPosition) {
+        const timeSinceBroadcast = Date.now() - this._lastBroadcastTime;
+        // Re-broadcast if no update was sent recently
+        if (timeSinceBroadcast >= heartbeatInterval - 1000) {
+          this._updateCount++;
+          this.onLocationUpdate({
+            ...this._lastBroadcastPosition,
+            timestamp: Date.now(),
+          });
+          this._lastBroadcastTime = Date.now();
+        }
+      }
+    }, heartbeatInterval);
   }
 
   _stopWatching() {
@@ -254,6 +277,10 @@ export class TrackingEngine {
       clearInterval(this._intervalId);
       this._intervalId = null;
     }
+    if (this._heartbeatId) {
+      clearInterval(this._heartbeatId);
+      this._heartbeatId = null;
+    }
   }
 
   _handlePositionUpdate(position) {
@@ -261,6 +288,8 @@ export class TrackingEngine {
     if (!loc) return; // Filtered out by distance filter
 
     this._updateCount++;
+    this._lastBroadcastPosition = loc;
+    this._lastBroadcastTime = Date.now();
     this.onLocationUpdate(loc);
 
     // Check geofences
@@ -286,6 +315,8 @@ export class TrackingEngine {
     };
 
     // Distance filter — skip if barely moved
+    // BUT: always send the first position AND periodically allow
+    // updates through even when stationary (for newly-joined viewers)
     if (this._lastPosition) {
       const dist = calculateDistance(
         this._lastPosition.latitude,
@@ -294,8 +325,14 @@ export class TrackingEngine {
         loc.longitude
       ) * 1000; // Convert km to meters
 
-      if (dist < this.mode.distanceFilter) {
-        return null; // Skip update — hasn't moved enough
+      const timeSinceLastBroadcast = Date.now() - this._lastBroadcastTime;
+      // In emergency mode, force through every 10s even if stationary
+      // In other modes, force through every 30s
+      const forceInterval = this._emergencyMode ? 10000 : 30000;
+      const shouldForce = timeSinceLastBroadcast >= forceInterval;
+
+      if (dist < this.mode.distanceFilter && !shouldForce) {
+        return null; // Skip update — hasn't moved enough and not due for heartbeat
       }
 
       this._totalDistance += dist / 1000; // km
