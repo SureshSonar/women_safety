@@ -118,25 +118,51 @@ export function formatCoords(lat, lng) {
 
 /**
  * Search for nearby places using Overpass API (OpenStreetMap)
+ * Supports single & combined amenity queries (e.g. all_medical)
  */
 export async function searchNearbyPlaces(lat, lng, type = 'police', radius = 5000) {
   const typeMap = {
-    police: '["amenity"="police"]',
-    hospital: '["amenity"="hospital"]',
-    fire_station: '["amenity"="fire_station"]',
-    pharmacy: '["amenity"="pharmacy"]',
+    police: ['["amenity"="police"]'],
+    hospital: ['["amenity"="hospital"]'],
+    fire_station: ['["amenity"="fire_station"]'],
+    pharmacy: ['["amenity"="pharmacy"]'],
+    clinic: ['["amenity"="clinic"]'],
+    doctors: ['["amenity"="doctors"]'],
+    dentist: ['["amenity"="dentist"]'],
+    // Combined query: all medical facilities in one request
+    all_medical: [
+      '["amenity"="hospital"]',
+      '["amenity"="clinic"]',
+      '["amenity"="pharmacy"]',
+      '["amenity"="doctors"]',
+      '["amenity"="dentist"]',
+    ],
   };
 
-  const query = typeMap[type] || typeMap.police;
+  const queries = typeMap[type] || typeMap.police;
+
+  const subtypeLabels = {
+    hospital: 'Hospital',
+    clinic: 'Clinic',
+    pharmacy: 'Pharmacy',
+    doctors: 'Doctor',
+    dentist: 'Dentist',
+    police: 'Police Station',
+    fire_station: 'Fire Station',
+  };
 
   try {
+    // Build Overpass union query supporting multiple amenity types
+    const unionParts = queries
+      .map(q => `node${q}(around:${radius},${lat},${lng});\nway${q}(around:${radius},${lat},${lng});`)
+      .join('\n');
+
     const overpassQuery = `
-      [out:json][timeout:10];
+      [out:json][timeout:15];
       (
-        node${query}(around:${radius},${lat},${lng});
-        way${query}(around:${radius},${lat},${lng});
+        ${unionParts}
       );
-      out center body 5;
+      out center body 50;
     `;
 
     const response = await fetch('https://overpass-api.de/api/interpreter', {
@@ -151,16 +177,33 @@ export async function searchNearbyPlaces(lat, lng, type = 'police', radius = 500
 
     const data = await response.json();
 
-    return data.elements.map((el) => ({
-      id: el.id,
-      name: el.tags?.name || `${type.replace('_', ' ')} station`,
-      type: type,
-      latitude: el.lat || el.center?.lat,
-      longitude: el.lon || el.center?.lon,
-      address: el.tags?.['addr:full'] || el.tags?.['addr:street'] || '',
-      phone: el.tags?.phone || el.tags?.['contact:phone'] || '',
-      distance: calculateDistance(lat, lng, el.lat || el.center?.lat, el.lon || el.center?.lon),
-    })).sort((a, b) => a.distance - b.distance);
+    return data.elements
+      .filter(el => {
+        const elLat = el.lat || el.center?.lat;
+        const elLng = el.lon || el.center?.lon;
+        return elLat && elLng;
+      })
+      .map((el) => {
+        const amenity = el.tags?.amenity || type;
+        return {
+          id: el.id,
+          name: el.tags?.name || subtypeLabels[amenity] || amenity.replace(/_/g, ' '),
+          type: amenity,
+          subtype: subtypeLabels[amenity] || amenity.replace(/_/g, ' '),
+          latitude: el.lat || el.center?.lat,
+          longitude: el.lon || el.center?.lon,
+          address:
+            el.tags?.['addr:full'] ||
+            [el.tags?.['addr:street'], el.tags?.['addr:city']].filter(Boolean).join(', ') ||
+            '',
+          phone: el.tags?.phone || el.tags?.['contact:phone'] || '',
+          website: el.tags?.website || el.tags?.['contact:website'] || '',
+          openingHours: el.tags?.opening_hours || '',
+          emergency: el.tags?.emergency === 'yes',
+          distance: calculateDistance(lat, lng, el.lat || el.center?.lat, el.lon || el.center?.lon),
+        };
+      })
+      .sort((a, b) => a.distance - b.distance);
   } catch (error) {
     console.error('Error searching nearby places:', error);
     return [];
